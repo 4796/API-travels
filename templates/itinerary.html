@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel Itinerary</title>
+    <link rel="stylesheet" href="static/style.css">
+</head>
+<body>
+<h1>Your Travel Itinerary</h1>
+
+<p><strong>Starting Location:</strong> {{ start }}</p>
+<p><strong>Destination:</strong> {{ destination }}</p>
+<p><strong>Budget:</strong> €{{ budget }}</p>
+<p><strong>Duration:</strong> {{ duration }} days</p>
+
+<h2>Route Information</h2>
+<p><strong>Distance:</strong> {{ route_info.distance }}</p>
+<p><strong>Estimated Travel Time:</strong> {{ route_info.duration }}</p>
+<div id="map"></div>
+
+<h2>Available Hotels in {{ destination }}</h2>
+<ul>
+    {% for hotel in hotels %}
+    <li>
+        <strong>{{ hotel.property.name }}</strong><br>
+        Price: {{ hotel.property.priceBreakdown.grossPrice.value }} EUR<br>
+    </li>
+    {% endfor %}
+</ul>
+
+
+<style>
+    #map {
+        height: 200px; /* Visina mape */
+        width: 400px;   /* Širina mape */
+    }
+</style>
+
+
+<script>
+    function initMap() {
+        const start = "{{ start }}";
+        const destination = "{{ destination }}";
+
+        // Inicijalizacija Geocodera
+        const geocoder = new google.maps.Geocoder();
+
+        // Geokodiranje polazišta
+        geocoder.geocode({ address: start }, (results, status) => {
+            if (status === "OK" && results[0].geometry) {
+                // Kreiranje mape
+                const map = new google.maps.Map(document.getElementById("map"), {
+                    zoom: 7,
+                    center: results[0].geometry.location, // Postavljanje centra na polazište
+                });
+
+                // Inicijalizacija servisa za rute
+                const directionsService = new google.maps.DirectionsService();
+                const directionsRenderer = new google.maps.DirectionsRenderer();
+
+                // Povezivanje DirectionRenderer-a sa mapom
+                directionsRenderer.setMap(map);
+
+                // Generisanje rute
+                directionsService.route(
+                    {
+                        origin: start,
+                        destination: destination,
+                        travelMode: google.maps.TravelMode.DRIVING,
+                        unitSystem: google.maps.UnitSystem.METRIC,
+                    },
+                    (response, status) => {
+                        if (status === "OK") {
+                            directionsRenderer.setDirections(response); // Prikaz rute
+                        } else {
+                            alert("Directions request failed due to " + status);
+                        }
+                    }
+                );
+            } else {
+                alert("Could not find location for starting point: " + status);
+            }
+        });
+    }
+
+    // Inicijalizacija mape
+    window.onload = initMap;
+</script>
+
+
+<a href="/">Plan Another Trip</a>
+</body>
+</html>

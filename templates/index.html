@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel Itinerary Planner</title>
+    <link rel="stylesheet" href="static/style.css">
+</head>
+<body onload="initAutocomplete();">
+<h1>Plan Your Trip</h1>
+</br>
+</br>
+<!-- Prikaz poruka o greškama -->
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+<ul style="color: red;">
+    {% for message in messages %}
+    <li>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+{% endwith %}
+
+<form action="/submit" method="POST" onsubmit="return validateForm(event);">
+    <label for="start">Starting Location:</label>
+    <input type="text" id="start" name="start" required placeholder="Enter your starting location"><br><br>
+
+    <label for="destination">Destination:</label>
+    <input type="text" id="destination" name="destination" required placeholder="Enter your destination"><br><br>
+
+    <label for="budget">Budget (€):</label>
+    <input type="number" id="budget" name="budget" required min="1" placeholder="Enter your budget"><br><br>
+
+    <label for="duration">Travel Duration (days):</label>
+    <input type="number" id="duration" name="duration" required min="1" placeholder="Enter trip duration"><br><br>
+
+    <button type="submit">Plan My Trip</button>
+</form>
+
+<script>
+    function validateForm(event) {
+        const startInput = document.getElementById("start");
+        const destinationInput = document.getElementById("destination");
+
+        if (!startInput.dataset.placeId) {
+            alert("Please select a valid starting location from the suggestions.");
+            event.preventDefault(); // Sprečava slanje forme
+            return false;
+        }
+
+        if (!destinationInput.dataset.placeId) {
+            alert("Please select a valid destination from the suggestions.");
+            event.preventDefault();
+            return false;
+        }
+
+        return true;
+    }
+
+
+    function initAutocomplete() {
+      var startInput = document.getElementById('start');
+      var destinationInput = document.getElementById('destination');
+
+       var options = {
+        types: ['(cities)'],
+      };
+      var autocompleteStart = new google.maps.places.Autocomplete(startInput, options);
+      var autocompleteDestination = new google.maps.places.Autocomplete(destinationInput, options);
+
+      autocompleteStart.addListener('place_changed', function () {
+            const place = autocompleteStart.getPlace();
+            if (place && place.place_id) {
+                startInput.dataset.placeId = place.place_id; a
+            } else {
+                startInput.dataset.placeId = '';
+            }
+        });
+
+        autocompleteDestination.addListener('place_changed', function () {
+            const place = autocompleteDestination.getPlace();
+            if (place && place.place_id) {
+                destinationInput.dataset.placeId = place.place_id;
+            } else {
+                destinationInput.dataset.placeId = '';
+            }
+        });
+    }
+</script>
+
+</body>
+</html>
